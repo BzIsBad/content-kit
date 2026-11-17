@@ -1,0 +1,18 @@
+node_modules/
+.env
+*.mp4
+*.mov
+*.wav
+tests/.tmp/
+.DS_Store
+
+# internal, never published (public repo under a personal account)
+CLAUDE.md
+docs/plans/
+docs/findings/
+docs/handoff/
+docs/decisions/
+docs/testing/
+
+# private word list for the "nothing personal" test; never published
+tests/private-words.local.txt

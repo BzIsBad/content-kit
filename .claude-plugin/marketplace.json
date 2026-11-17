@@ -1,0 +1,16 @@
+{
+  "name": "content-kit",
+  "description": "Content kit: turns the Claude desktop app into a video editor that knows your brand.",
+  "owner": {
+    "name": "Content Kit"
+  },
+  "plugins": [
+    {
+      "name": "content-kit",
+      "source": "./plugin",
+      "description": "Set up a brand once, then turn long recordings into short vertical videos in your brand's look and voice.",
+      "category": "productivity",
+      "tags": ["video", "reels", "small-business", "brand"]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "recipeSchemaVersion": 1,
+  "id": "reel",
+  "title": "Short vertical video",
+  "description": "Turns a long talking or demo recording into a 15 to 90 second vertical video with captions, your logo and an end card.",
+  "enabledByDefault": true,
+  "requiredTools": ["node", "transcribe", "render"],
+  "kitCommands": ["new-job", "ingest", "transcribe", "frames", "validate", "render", "review-frames"],
+  "skill": {
+    "template": "skill.template.md",
+    "name": "{{BRAND_SLUG}}-reel"
+  },
+  "questions": [
+    {
+      "id": "reel-length",
+      "section": 5,
+      "ask": "How long should your short videos usually be? Anywhere from 15 to 90 seconds works.",
+      "why": "so I know how much of each recording to keep",
+      "goodEnough": "Two numbers in seconds, or one number I can turn into a range (\"about 45\" becomes 35 to 50).",
+      "clarifyIf": "They say \"short\" or \"it depends\": ask what their best-performing video was, and how long it ran.",
+      "mapsTo": ["reel.minSeconds", "reel.maxSeconds"],
+      "rule": "Both between 15 and 90, and min at least 10 below max. If they give a single short number (\"about 20\"), use 15 to 30. If they want shorter than 15 seconds or longer than 90, write that in the guide under section 5 and tell them plainly that this version of the kit makes 15 to 90 second videos.",
+      "default": { "reel.minSeconds": 15, "reel.maxSeconds": 60 }
+    },
+    {
+      "id": "reel-framing",
+      "section": 5,
+      "ask": "When you film, do you usually hold the phone upright, or sideways? And is there ever something important at the edges of the shot, like a whiteboard, a screen, or two people side by side?",
+      "why": "so I don't cut off something that matters when I make the video tall and narrow",
+      "goodEnough": "Upright, or sideways with the important part in the middle → crop. Sideways with important things at the edges → fit the whole picture.",
+      "clarifyIf": "They film both ways: ask which is more common, and note in the guide that you'll choose per video.",
+      "mapsTo": ["reel.framing"],
+      "rule": "Important things in the middle → \"crop-center\". Important things at the edges → \"blur-fit\" (the whole picture, with a soft blurred copy filling the space above and below).",
+      "default": { "reel.framing": "crop-center" }
+    },
+    {
+      "id": "reel-watermark",
+      "section": 4,
+      "ask": "Would you like your logo small in a corner for the whole video? Top right or top left?",
+      "why": "",
+      "goodEnough": "Yes or no, and a corner.",
+      "clarifyIf": "",
+      "mapsTo": ["reel.watermark.enabled", "reel.watermark.corner"],
+      "rule": "Only ask if they gave a logo; with no logo, set enabled to false. Corners are top-right or top-left: the bottom of the screen is covered by the app's buttons. Leave opacity at 0.9 and sizePct at 18; change sizePct only after they see the test clip (\"too small\" adds 4, \"too big\" takes 4 off, 8 to 35).",
+      "default": { "reel.watermark.enabled": true, "reel.watermark.corner": "top-right", "reel.watermark.opacity": 0.9, "reel.watermark.sizePct": 18 }
+    },
+    {
+      "id": "reel-endcard",
+      "section": 3,
+      "ask": "At the very end, I can show your logo and that line about what to do next for a couple of seconds. Want that on every video?",
+      "why": "",
+      "goodEnough": "Yes or no.",
+      "clarifyIf": "",
+      "mapsTo": ["reel.endCard.enabled", "reel.endCard.seconds", "reel.endCard.cta"],
+      "rule": "cta is the short line from question 3b. Keep seconds at 2 unless they ask for longer (at most 4).",
+      "default": { "reel.endCard.enabled": true, "reel.endCard.seconds": 2 }
+    }
+  ],
+  "placeholders": [
+    { "name": "BRAND_NAME", "kind": "value", "from": "brand.json name" },
+    { "name": "BRAND_SLUG", "kind": "value", "from": "brand.json slug" },
+    { "name": "BRAND_DIR", "kind": "value", "from": "The brand folder relative to the workspace, forward slashes: brands/<slug>" },
+    { "name": "NODE", "kind": "value", "from": "Absolute path to the kit's Node, forward slashes (see kit-commands.md)" },
+    { "name": "KIT", "kind": "value", "from": "The launcher KIT_HOME/kit.mjs as an absolute path with forward slashes (the kit value scaffold reports). Never the kit.mjs inside the plugin folder: that path changes when the plugin updates." },
+    { "name": "KIT_HOME", "kind": "value", "from": "Absolute path to the kit home, forward slashes" },
+    { "name": "KIT_VERSION", "kind": "value", "from": "version in the plugin's .claude-plugin/plugin.json" },
+    { "name": "GENERATED_ON", "kind": "value", "from": "Today's date, YYYY-MM-DD" },
+    { "name": "MIN_SECONDS", "kind": "value", "from": "brand.json reel.minSeconds" },
+    { "name": "MAX_SECONDS", "kind": "value", "from": "brand.json reel.maxSeconds" },
+    { "name": "AUDIENCE", "kind": "distilled", "from": "Guide section 1", "write": "One or two sentences: who watches and what they care about. Their words where possible." },
+    { "name": "PILLARS", "kind": "distilled", "from": "Guide section 1", "write": "A short bulleted list of the content pillars." },
+    { "name": "VOICE", "kind": "distilled", "from": "Guide section 2", "write": "A bulleted list: the three words, phrases they use, words they never use, caption-writing rules. Specific and checkable. Include one sample caption verbatim if they gave any." },
+    { "name": "HOOKS", "kind": "distilled", "from": "Guide sections 3 and 7", "write": "A bulleted list of hook styles that work for this brand, each with a real example line if one was given. Say which to try first." },
+    { "name": "CTA", "kind": "value", "from": "brand.json reel.endCard.cta, or guide section 3 if the end card is off" },
+    { "name": "PACING", "kind": "distilled", "from": "Guide section 5", "write": "Two to four bullets an editor can follow: how often to cut, how long a pause may run, music or not, things they love or hate (zooms, on-screen emojis, transitions)." },
+    { "name": "EXAMPLES", "kind": "distilled", "from": "Guide section 7", "write": "Two short bulleted lists, 'What good looks like' and 'Not us', each item one line naming the example and the reason. If there are none yet, write one bullet saying so and asking to add some." },
+    { "name": "NEVER_DO", "kind": "distilled", "from": "Guide section 8 (and the never-say words from section 2)", "write": "A bulleted list of hard rules, each one checkable against a finished video. Keep every rule the client gave; don't soften them." },
+    { "name": "APPROVALS", "kind": "distilled", "from": "Guide section 9", "write": "Who must see what before posting, and how fast. If nobody needs to approve, say so in one line." },
+    { "name": "WORD_FIXES", "kind": "distilled", "from": "Brand name, product names, people's names and local place names from the whole guide", "write": "A bulleted list of words the speech-to-text is likely to get wrong, each as: correct spelling (how it sounds). Used to fill captions.corrections in edit.json. If none, write '- None yet.'" }
+  ]
+}
