@@ -44,7 +44,7 @@ export const Captions = ({ captions, theme }) => {
     textShadow: `0 ${size * 0.05}px ${size * 0.2}px rgba(0,0,0,0.45)`, overflowWrap: 'anywhere', textWrap: 'balance',
   };
   if (position === 'center') { box.top = height * 0.5; box.transform = 'translateY(-50%)'; }
-  else { box.bottom = height * (1 - 0.77); } // block bottom edge at 77% of height, clear of the 80% line
+  else { box.bottom = height * (1 - 0.73); } // block bottom edge at 73% of height, clear of the 80% line
 
   return (
     <div style={box}>

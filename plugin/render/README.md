@@ -51,7 +51,7 @@ Codes: `BAD_ARGS`, `BRAND_NOT_FOUND`, `BRAND_INVALID`, `JOB_NOT_FOUND`, `EDIT_NO
 - Plays `edit.json` segments back to back from the source files (`in`/`out` in source seconds).
 - Fits to the output size: `crop-center` fills the frame and `cropX` (0 to 1, default 0.5) picks the crop centre; `blur-fit` shows the whole frame over a blurred copy.
 - Captions from the transcript words, remapped from source time to output time (a word belongs to the clip its midpoint falls in). Corrections (`from` can be several words, case and punctuation ignored) are applied first. Styles `word-highlight` (current word in the accent colour) and `phrase`; honours `maxWordsPerLine`, `uppercase`, `fontSizePct` (percent of frame height), `position`. Pages break at sentence ends, commas, pauses over 0.8 s and cuts. The font shrinks to keep a page within two lines.
-- Safe area: every text block, the watermark and the end card sit inside the left 88% and above the bottom 80% of the frame (the right-edge limit is `width * 0.88`, bottom limit `height * 0.8`).
+- Safe area: a centred box with 12% clear on the left and right, 8% at the top and 20% at the bottom (`src/safe.js`). Captions (both styles, both positions), hook title, text overlays and the end card are centred on the frame and wrap inside its width; the lower-third caption block ends at 73% of the height. The watermark may sit in a top corner outside the box.
 - Watermark logo (corner and opacity from `brand.json`), hook title, text and image overlays, optional music (loops, `volumeDb`, fades out over the last second), end card (brand colours, logo or brand name, call to action).
 - Defaults: `edit.json` wins, anything omitted comes from `brand.json`. `edit.music: false` means no music; an `edit.music.file` of `null` falls back to `brand.music.defaultTrack`. `edit.endCard` is `true`, `false` or `{ seconds, cta }`.
 
@@ -65,7 +65,7 @@ Footage, logos, fonts and music are never given to Remotion as file paths. `lib/
 
 ## `smoke`
 
-Renders a 5-second clip with no footage: a generated test pattern showing the brand colours as swatches, the two fonts, a moving bar, a dashed line marking the safe area, the hook title, a text overlay, the watermark, word captions in the brand's style, and the end card (at least 1.5 s). Audio is added only if the brand has a `music.defaultTrack`.
+Renders a 5-second clip with no footage: a generated test pattern showing the brand colours as swatches, the two fonts, a moving bar, a dashed line marking the safe area (everything sits inside it, laid out around wherever the captions go), the hook title, a text overlay, the watermark, word captions in the brand's style, and the end card (at least 1.5 s). Audio is added only if the brand has a `music.defaultTrack`.
 
 ## Speed (this machine, 8 threads, Linux)
 

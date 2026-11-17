@@ -16,11 +16,11 @@ Everything it makes stays on your computer, in a folder you own.
 
 1. **Make a new folder** for your videos, somewhere that doesn't sync to the cloud. Your home folder is a good spot; call it something like **Content**. Not in Dropbox, Google Drive, OneDrive or iCloud: big video files and syncing don't get along.
 2. **Open the Claude app**, go to the **Code** tab, and open that folder.
-3. **Add the kit.** Type these two lines, one at a time:
-   ```
-   /plugin marketplace add bzisbad/content-kit
-   /plugin install content-kit@content-kit
-   ```
+3. **Add the kit.**
+   - Type `/plugin` and press Enter. The plugin screen opens.
+   - Choose **Add marketplace** and enter `bzisbad/content-kit`. If it asks for a full address, use `https://github.com/BzIsBad/content-kit`.
+   - Open the marketplace you just added, pick **content-kit**, and choose **Install**.
+   - Type `/` and check that **setup** is in the list. If it isn't, start a new session in the same folder.
 4. **Say "set me up".** Claude checks your computer, installs what it needs (no passwords, nothing outside one folder), and then asks you about your brand, one question at a time. Answer in your own words. "I don't know yet" is fine.
 5. **Watch the test clip.** Claude makes a five-second clip in your colours. Tell it if anything looks off.
 

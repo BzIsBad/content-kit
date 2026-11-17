@@ -122,7 +122,7 @@ On a local disk. Not in Drive, Dropbox, iCloud or OneDrive (raw footage is large
 - `fonts.*.file: null` means use a bundled fallback font. A missing logo means no watermark and a text-only end card. A render never fails because an optional asset is absent.
 - `fontSizePct` is a percentage of frame height. `reel.watermark.sizePct` (optional, 8 to 35, default 18) is the corner logo's width as a percentage of frame width; it is also capped so the logo is never taller than 90% of that width.
 - `teamSize` of 3 or more makes `validate` add the licence note once (the video tool is free for small teams; the client may need their own licence later depending on use; non-profits are free). It is a note, never a failure, and renders never repeat it.
-- Captions sit inside a safe area that clears the Instagram and TikTok buttons: nothing in the bottom 20% or the right 12% of the frame.
+- Text and captions stay inside a centred safe area that leaves 12 percent clear on the left and on the right, 8 percent at the top and 20 percent at the bottom (this clears the app buttons on Instagram and TikTok and keeps captions centred). Captions are centred on the frame and wrap within the safe width; the watermark logo may sit in a top corner outside it.
 
 ## 3. `edit.json`
 

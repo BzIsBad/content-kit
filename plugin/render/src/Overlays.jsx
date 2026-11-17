@@ -5,7 +5,7 @@ import { safeBox } from './safe.js';
 const fade = (frame, dur, edge = 6) =>
   interpolate(frame, [0, edge, Math.max(edge + 1, dur - edge), dur], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
-const yFor = (position, height) => ({ top: height * 0.1, center: height * 0.4, bottom: height * 0.62 }[position] ?? height * 0.08);
+const yFor = (position, height) => ({ top: height * 0.135, center: height * 0.4, bottom: height * 0.62 }[position] ?? height * 0.08);
 
 export const HookTitle = ({ hook, theme }) => {
   const frame = useCurrentFrame();
@@ -63,7 +63,7 @@ export const EndCard = ({ endCard, theme }) => {
         {endCard.logoUrl ? (
           <Img src={endCard.logoUrl} style={{ width: boxW * 0.7, maxHeight: height * 0.2, objectFit: 'contain' }} />
         ) : (
-          <div style={{ fontFamily: theme.headlineFont, fontWeight: 800, fontSize: height * 0.06, lineHeight: 1.1, color: text, textAlign: 'center', overflowWrap: 'anywhere' }}>{theme.name}</div>
+          <div style={{ fontFamily: theme.headlineFont, fontWeight: 800, fontSize: height * (theme.name.length > 30 ? 0.04 : theme.name.length > 16 ? 0.05 : 0.06), lineHeight: 1.1, color: text, textAlign: 'center', overflowWrap: 'break-word' }}>{theme.name}</div>
         )}
         <div style={{ width: boxW * 0.25, height: height * 0.004, background: accent, borderRadius: 4 }} />
         {endCard.cta ? (

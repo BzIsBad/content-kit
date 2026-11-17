@@ -1,7 +1,7 @@
 {
   "name": "content-kit",
   "displayName": "Content Kit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Set up a brand once, then turn long recordings into short vertical videos in your brand's look and voice. Start with the setup skill.",
   "author": {
     "name": "Content Kit"

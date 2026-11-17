@@ -12,6 +12,12 @@ Everything it makes lives in a folder on the owner's computer, as plain files th
 
 In the Code tab of the Claude desktop app (Pro plan or higher), with the folder for the videos open:
 
+1. Type `/plugin`. The plugin screen opens.
+2. Choose **Add marketplace** and enter `bzisbad/content-kit`.
+3. Open that marketplace, pick **content-kit**, and choose **Install**.
+
+In the Claude Code terminal, the same thing is two commands:
+
 ```
 /plugin marketplace add bzisbad/content-kit
 /plugin install content-kit@content-kit

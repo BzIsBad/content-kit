@@ -41,7 +41,7 @@ export const Reel = ({ plan }) => {
     <AbsoluteFill style={{ background: '#000' }}>
       {plan.segments.map((seg, i) => (
         <Sequence key={i} from={seg.startFrame} durationInFrames={seg.durationFrames} premountFor={fps} name={`Clip ${i + 1}`}>
-          {seg.kind === 'pattern' ? <TestPattern theme={theme} /> : <SourceClip seg={seg} />}
+          {seg.kind === 'pattern' ? <TestPattern theme={theme} captions={plan.captions} /> : <SourceClip seg={seg} />}
         </Sequence>
       ))}
       <Sequence from={0} durationInFrames={contentEnd} name="Overlays" layout="none">

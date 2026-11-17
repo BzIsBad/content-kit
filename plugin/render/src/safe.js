@@ -1,11 +1,15 @@
-// Safe area: nothing in the bottom 20% or the right 12% of the frame.
-export const SAFE_RIGHT_PCT = 0.12;
+// Safe area: a centred box that leaves 12% clear on the left and right, 8% at the top
+// and 20% at the bottom (clears the Instagram and TikTok buttons, keeps captions centred).
+export const SAFE_SIDE_PCT = 0.12;
+export const SAFE_TOP_PCT = 0.08;
 export const SAFE_BOTTOM_PCT = 0.2;
 
 export function safeBox(width, height) {
-  const right = width * (1 - SAFE_RIGHT_PCT);
+  const left = width * SAFE_SIDE_PCT;
+  const right = width * (1 - SAFE_SIDE_PCT);
+  const top = height * SAFE_TOP_PCT;
   const bottom = height * (1 - SAFE_BOTTOM_PCT);
-  // Text blocks are centred on the frame but must stay left of `right`.
-  const half = Math.min(width / 2, right - width / 2) - width * 0.025;
-  return { right, bottom, boxW: Math.round(half * 2), centerX: width / 2 };
+  // Text blocks are centred on the frame and wrap inside the safe width, with a little padding.
+  const boxW = Math.round(right - left - width * 0.04);
+  return { left, right, top, bottom, boxW, centerX: width / 2 };
 }
