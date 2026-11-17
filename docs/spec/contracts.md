@@ -1,6 +1,6 @@
 # Contracts (v1)
 
-_Set 2026-11-17; reconciled with the build on 2026-11-17 (integration). These are the fixed interfaces between the setup skill, the pipeline scripts, the render project and the generated client skills. If code needs something different, change this file in the same change._
+_Set 2026-11-17; reconciled with the build on 2026-11-17 (integration); self-update added 2026-11-17. These are the fixed interfaces between the setup skill, the pipeline scripts, the render project and the generated client skills. If code needs something different, change this file in the same change._
 
 ## 1. Places on the client machine
 
@@ -18,25 +18,43 @@ Machine-level, shared by every workspace, never inside a cloud-synced folder.
     lib/                 package.json + node_modules: sherpa-onnx-node 2.0.1 (prebuilt addon), seek-bzip 2.0.0
     models/<model id>/   encoder.int8.onnx, decoder.int8.onnx, joiner.int8.onnx, tokens.txt
   render/                copy of plugin/render with its node_modules and Remotion's headless Chrome
+  kit/                   self-updated copies of the kit (see "Self-update" below)
+    <x.y.z>/             laid out like plugin/: .claude-plugin/plugin.json, scripts/, render/ (source
+                         only, no node_modules), recipes/, templates/, and .kit-ok (written last, once
+                         the copy passed its checks); a .bad file put there by hand makes the launcher skip it
+    .tmp-*, .old-*       an unpack or a replacement in progress; removed when finished or after an hour
   state.json             what is installed, where, and the last doctor result
 ```
 
 Resolve it with `os.homedir()`. The environment variable `CONTENT_KIT_HOME` overrides it (tests use this).
 
-**The launcher.** `install` and `scaffold` copy `plugin/scripts/launcher.mjs` to `<kit home>/kit.mjs`. It runs the newest `kit.mjs` it can find, with the same arguments: the one recorded in `state.json` (`kit.path`), or any installed copy in Claude's plugin cache that isn't marked `.orphaned_at`; the highest plugin version wins. If it finds none it prints the usual failure object with code `KIT_NOT_FOUND`. The workspace permission list and every generated skill call the launcher, never a path inside the plugin folder, because the plugin folder's path carries its version and changes on update.
+**The launcher.** `install` and `scaffold` copy `plugin/scripts/launcher.mjs` to `<kit home>/kit.mjs`, and every kit run puts it back if it's missing or different. It runs the newest usable `kit.mjs` it can find, with the same arguments. Candidates: the self-updated copies in `<kit home>/kit/<x.y.z>/`; the one recorded in `state.json` (`kit.path`); and any installed copy in Claude's plugin cache that isn't marked `.orphaned_at`. The highest version wins; on a tie a self-updated copy wins, then the recorded one. A self-updated copy is usable only if it passes a quick self-check: its folder name is `x.y.z`, its `plugin.json` says the same version, `scripts/kit.mjs` and `scripts/lib/common.mjs` exist, `.kit-ok` exists and `.bad` doesn't. A copy that fails, or whose `kit.mjs` won't load, is skipped and the next one runs (that is the rollback). If it finds none it prints the usual failure object with code `KIT_NOT_FOUND`. The launcher's second line is `// launcher-generation: N`; a kit never replaces a launcher of a later generation with an earlier one, so an older copy can't take the self-update path away. The workspace permission list and every generated skill call the launcher, never a path inside the plugin folder, because the plugin folder's path carries its version and changes on update.
 
 **`state.json`** (written atomically; every top-level key is optional until its tool is installed):
 
 | Key | Fields |
 | --- | --- |
 | `schemaVersion`, `kitHome`, `updatedAt` | always present |
-| `kit` | `path` (the current `kit.mjs`, refreshed by every kit run), `pluginDir`, `version` (plugin version), `launcher` |
+| `kit` | the kit in use, refreshed by every kit run: `path` (its `kit.mjs`), `pluginDir` (its folder), `version`, `source` (`plugin` or `self-update`), `launcher` |
+| `update` | `lastCheckAt` (ISO time of the last release check, automatic or not), `lastResult` (`updated`, `reinstalled`, `up-to-date`, `no-release`, `held-back`, `available`, `offline`, `bad-download`, `bad-release`, or `checking` while one runs), `latest` (the latest release's version, or null), `detail` (why the last check failed, if it did), `lastUpdate` (`from`, `to`, `at`, `kitDir`) |
 | `node` | `path`, `version`, `portable` (true when it is the kit's own copy), `pinned` |
 | `render` | `dir`, `sourceHash`, `lockHash`, `remotionVersion`, `installedAt` |
 | `stt` | `engine` (`sherpa-onnx`), `sherpaOnnxNode`, `lib`, `model`, `modelDir`, `installedAt` (a `whisper` key from kit 0.1.0 is removed by `install`) |
 | `lastDoctor` | `at`, `ready`, `checks` (check id → `ok` / `missing` / `broken`) |
 
 Generated skills read `node.path` and `kit.launcher` from here to recover if a path stops working.
+
+### Self-update
+
+The desktop app can't update a third-party plugin from its plugin screen, and clients never open a terminal, so the kit fetches fixes to its working parts itself.
+
+- **Where from.** The public repo named in `RELEASES.repo` (`plugin/scripts/lib/common.mjs`), `https://github.com/BzIsBad/content-kit`. The latest release is found by following `<repo>/releases/latest`, which redirects to `<repo>/releases/tag/<tag>` (no API call, so no rate limit; a redirect to `<repo>/releases` means nothing is published). The archive is `<repo>/archive/refs/tags/<tag>.tar.gz`. Https only, at every redirect.
+- **What is accepted.** Only a tag of the form `vMAJOR.MINOR.PATCH` (no pre-release suffix), never a branch, and only when its version is newer than the newest usable kit already on the computer (`--force` reinstalls the latest even when it isn't). A version rolled back on this computer (its folder has `.bad`) is held back (`held-back`) until a newer release appears or `--force` is given. The archive is unpacked with Node alone (zlib and a small tar reader). The whole archive is refused if any entry is a link, a special file, an absolute path, a drive letter, a backslash or a `..`, or if it has more than one top folder. Only `plugin/.claude-plugin/plugin.json`, `plugin/scripts/`, `plugin/render/` (no `node_modules`), `plugin/recipes/` and `plugin/templates/` are written. Skills are not: they change only with the plugin.
+- **Checks before it counts.** It unpacks into `<kit home>/kit/.tmp-*`, then checks that `plugin.json`'s version equals the tag's, that `scripts/kit.mjs` exists, that `kit.mjs help` answers in a separate Node, and that every module in `scripts/lib/` loads. Then it writes `.kit-ok` and renames the folder to `<kit home>/kit/<x.y.z>/`. Anything that fails leaves the kit exactly as it was.
+- **Keeping versions.** The newest two usable copies are kept (the newest and the one before it, for rollback), plus whichever copy is running; older ones are removed.
+- **When.** `update` runs it on demand (the doctor skill does, so "check my video setup" fetches the latest). `new-job` runs it automatically at most once every 7 days (`RELEASES.checkEveryDays`), measured from `update.lastCheckAt`, or after 1 day (`RELEASES.retryAfterDays`) when the last check didn't get an answer (offline, unreachable, cut off), with short timeouts (5 s to find the release, 30 s to download it). It never fails or blocks the job: offline, an unreachable GitHub or a bad release just means no update this time. The commands after `new-job` run the new copy through the launcher, and `render` and `smoke-test` refresh the installed renderer from the new copy's `render/` before their next render (npm runs only if its lockfile changed).
+- **Environment.** `CONTENT_KIT_NO_UPDATE=1` turns the automatic check off (and `doctor`'s look-up). `CONTENT_KIT_RELEASE_URL` replaces the repo URL; it is for tests, and with it plain `http` is allowed to this computer (`127.0.0.1`, `localhost`) only.
+- **The release rule.** Every published version is a git tag `vX.Y.Z` on the commit it describes, with a GitHub release (not a draft or pre-release) for that tag, and `plugin/.claude-plugin/plugin.json` on that commit carries the same `X.Y.Z`. A release must keep every `kit.mjs` command and flag in section 5 working for skills generated by earlier versions, and must not need a newer pinned Node than the one on the computer unless `doctor` and `install` handle it.
 
 ### Workspace: one folder the client opens in the Code tab
 
@@ -196,18 +214,20 @@ One entry point: `node <plugin>/scripts/kit.mjs <command> [flags]`.
 | `render` | Makes render copies of the chosen clips, then renders `edit.json`: the final to `exports/<job>-v<N>.mp4`, a draft to `work/<job>-v<N>-draft.mp4` | `--job-dir`, `--draft` (half size, fast), `--force` |
 | `review-frames` | Pulls frames from a render at the start, each cut, each long clip's middle, each overlay and the end card into `review/v<N>[-draft]/` | `--job-dir`, `--version`, `--draft` |
 | `smoke-test` | Renders a 5-second branded test clip from a generated test pattern to `<brand>/exports/test-clip.mp4` | `--brand-dir` |
+| `update` | Looks up the latest published release and, if it's newer than the newest kit on this computer, downloads, checks and installs it into `<kit home>/kit/<x.y.z>/` (section 1, "Self-update"). Safe offline: it fails plainly and changes nothing | `--check` (only look), `--force` (reinstall the latest release even if it isn't newer) |
 | `install-skill` | Checks a generated skill draft (frontmatter on line 1, `name:` equal to `--name`, no `{{PLACEHOLDER}}` left) and saves it as `.claude/skills/<name>/SKILL.md`, keeping an older one as `SKILL.previous.md`; removes the draft. Claude drafts skills inside the brand folder and saves them with this, because Claude Code guards direct writes under `.claude/` | `--workspace`, `--from`, `--name` |
 
 Main success fields (every success also has `ok: true` and `command`):
 
 | Command | Fields |
 | --- | --- |
-| `doctor` | `ready`, `summary`, `kitHome`, `system`, `checks[]` of `{ id, label, status, detail, fix? }` |
+| `doctor` | `ready`, `summary`, `kitHome`, `system`, `kit: { version, source, path, latest, updateAvailable, checked, lastCheckAt, lastResult, newerInstalled? }` (never a failure; `checked` is false when offline or turned off), `checks[]` of `{ id, label, status, detail, fix? }` |
 | `install` | `installed` (per tool: `action` = `installed` / `already-installed` / `recorded`), `ready`, `summary`, `checks[]` |
 | `scaffold` | `workspace`, `created[]`, `node`, `kit` (the launcher), `settings: { file, action: created / merged / unchanged, source }` |
 | `add-brand` | `brandDir`, `slug`, `name`, `created[]`, `brandJson: { file, action: created / kept }` |
 | `validate` | `kind` (`brand` / `edit`), `file`, `warnings[]`; for an edit also `clipSeconds` |
-| `new-job` | `job`, `jobDir`, `existed`, `brief`, `editJson` |
+| `new-job` | `job`, `jobDir`, `existed`, `brief`, `editJson`, and `updated: { from, to, recipesChanged[] }` only when the automatic check just installed a newer kit (`recipesChanged` lists recipes whose `skill.template.md` changed, so their generated skills can be refreshed) |
+| `update` | `action` (`updated`, `reinstalled`, `up-to-date`, `no-release`, `held-back`, or with `--check` `available` / `up-to-date` / `no-release`), `current`, `latest`, `source`; when it installed: `from`, `to`, `kitDir`, `recipesChanged[]`, `pruned[]`. Failures: `UPDATE_OFFLINE`, `UPDATE_DOWNLOAD_BAD`, `UPDATE_RELEASE_BAD`, each with a `detail` |
 | `ingest` | `id`, `skipped`, `source`, `durationSec`, `video`, `audio`, `probe`, `proxy`, `wav`, `warning?` |
 | `transcribe` | `id`, `skipped`, `json`, `txt`, `words`, `segments`, `durationSec`, `warning?` |
 | `frames` | `id`, `from`, `to`, `every`, `frameCount`, `sheets[]` of `{ file, frames[] }`, `index` |

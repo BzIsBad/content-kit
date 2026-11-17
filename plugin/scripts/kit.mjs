@@ -24,6 +24,7 @@ const COMMANDS = {
   render: { options: { 'job-dir': 'string', draft: 'boolean', force: 'boolean' }, load: async () => (await import('./lib/cmd-render.mjs')).render },
   'review-frames': { options: { 'job-dir': 'string', version: 'string', draft: 'boolean' }, load: async () => (await import('./lib/cmd-media.mjs')).reviewFrames },
   'smoke-test': { options: { 'brand-dir': 'string' }, load: async () => (await import('./lib/cmd-render.mjs')).smokeTest },
+  update: { options: { check: 'boolean', force: 'boolean' }, load: async () => (await import('./lib/update.mjs')).update },
   'install-skill': { options: { workspace: 'string', from: 'string', name: 'string' }, load: async () => (await import('./lib/cmd-setup.mjs')).installSkill },
 };
 

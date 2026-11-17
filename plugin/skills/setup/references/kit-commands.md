@@ -10,7 +10,7 @@ Work these out once per session and reuse them.
 | --- | --- | --- |
 | `KIT_HOME` | The kit's home on this computer | The `CONTENT_KIT_HOME` environment variable if it's set (only tests set it); otherwise the `.content-kit` folder in the user's home folder (`/Users/<name>/.content-kit` on a Mac, `C:/Users/<name>/.content-kit` on Windows) |
 | `NODE` | The kit's own Node | macOS and Linux: `KIT_HOME/tools/node/bin/node`. Windows: `KIT_HOME/tools/node/node.exe` |
-| `KIT` | The kit program | `KIT_HOME/kit.mjs` once it exists (`install` and `scaffold` put it there). It's a small launcher that always runs the newest copy of the kit, so its path never changes when the plugin updates. Before the first `install`, use `PLUGIN_ROOT/scripts/kit.mjs` directly, where `PLUGIN_ROOT` is the plugin folder named at the top of the skill you came from. |
+| `KIT` | The kit program | `KIT_HOME/kit.mjs` once it exists (`install` and `scaffold` put it there). It's a small launcher that always runs the newest copy of the kit, so its path never changes when the kit updates (through the plugin or on its own). Before the first `install`, use `PLUGIN_ROOT/scripts/kit.mjs` directly, where `PLUGIN_ROOT` is the plugin folder named at the top of the skill you came from. |
 
 To find the home folder and `CONTENT_KIT_HOME`, run `echo "$HOME|$CONTENT_KIT_HOME"` in Bash or zsh, or `"$env:USERPROFILE|$env:CONTENT_KIT_HOME"` in PowerShell. In Git Bash on Windows, `$HOME` comes out as `/c/Users/sam`; run `cygpath -m "$HOME"` to get the `C:/Users/sam` form, and use that.
 
@@ -50,11 +50,12 @@ These are the fields to use from a successful result (the full list is in the co
 
 | Command | Use |
 | --- | --- |
-| `doctor` | `ready` (true when everything works), `summary`, and `checks[]` (each with `id`, `label`, `status`, `detail`, `fix`) |
+| `doctor` | `ready` (true when everything works), `summary`, `checks[]` (each with `id`, `label`, `status`, `detail`, `fix`), and `kit` (`version`, `source`, `latest`, `updateAvailable`) |
 | `install` | `ready`, `summary`, `installed` |
 | `scaffold` | `node` and `kit`: the exact paths the permission list allows |
 | `add-brand` | `brandDir` |
-| `new-job` | `job` (the folder name) and `jobDir` |
+| `new-job` | `job` (the folder name) and `jobDir`; `updated` (`from`, `to`, `recipesChanged`) only when it just picked up the kit's latest fixes |
+| `update` | `action` (`updated`, `reinstalled`, `up-to-date`, `no-release`, `held-back`, or `available` with `--check`), `from`, `to`, `recipesChanged` |
 | `ingest` | `durationSec`, `video`, `audio` |
 | `transcribe` | `txt` (the file to read) and `json` (word times) |
 | `frames` | `sheets[].file` (the images to look at) |
@@ -71,6 +72,7 @@ These are the fields to use from a successful result (the full list is in the co
 | --- | --- | --- |
 | `doctor` | setup, add-brand, doctor | none |
 | `install` | setup, doctor | `--only <tool>` (optional) |
+| `update` | doctor | `--check` (only look), `--force` (reinstall the latest) |
 | `scaffold` | setup, doctor | `--workspace <dir>` |
 | `add-brand` | setup, add-brand | `--workspace <dir> --slug <slug> --name <name>` |
 | `validate` | setup, add-brand, generated skills | `--file <path>` |

@@ -10,6 +10,7 @@ import {
 import { findBinaries } from './ffmpeg.mjs';
 import { DISK, cloudSyncCheck, freeBytes, systemSummary } from './system.mjs';
 import { MODEL, installModel, modelReady } from './stt.mjs';
+import { kitStatus } from './update.mjs';
 
 export const RENDER_SKIP = new Set(['node_modules', '.bundle', 'out', '.git', '.DS_Store']);
 
@@ -187,7 +188,15 @@ export async function doctor(flags) {
   if (isDir(p.home)) {
     updateState({ lastDoctor: { at: new Date().toISOString(), ready, checks: Object.fromEntries(checks.map((c) => [c.id, c.status])) } });
   }
-  return { ready, summary, kitHome: p.home, system: systemSummary(), checks };
+  // Which kit is running, where it came from, and whether a newer release exists. Never a
+  // failure: an available update is not a problem, and `update` installs it.
+  let kit;
+  try {
+    kit = await kitStatus();
+  } catch {
+    kit = null;
+  }
+  return { ready, summary, kitHome: p.home, system: systemSummary(), kit, checks };
 }
 
 // ---- install -------------------------------------------------------------------------------

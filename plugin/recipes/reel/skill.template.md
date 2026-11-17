@@ -70,6 +70,7 @@ The kit path above is a small launcher in the kit's own folder. It always runs t
 - If nothing is new and they didn't name a file, ask which recording to use. Show the newest few by name and date.
 - **Never change, move, rename or delete anything in `raw/`.** It's the client's original footage. Everything you make goes in the job folder.
 - Make a short name for the job from the brief, two to four words with hyphens (`spring-cleaning-tips`), and run `new-job --brand-dir "{{BRAND_DIR}}" --slug "<short-name>"`. Use the job folder it reports back.
+- About once a week, `new-job` also picks up the kit's latest fixes. If its result has `updated`, tell the client in one plain sentence, such as "I picked up the latest fixes for your video kit first.", then carry on; the next commands use the new kit on their own. If `updated.recipesChanged` includes `reel`, add one more sentence: the way reels are made has improved, and saying "check my video setup" after this video refreshes this skill to match (it keeps a copy of the old one). Don't stop the job for it.
 - Save the brief to `brief.md` in the job folder: today's date, the files used, and what they asked for in their own words.
 
 ### 2. Listen and look

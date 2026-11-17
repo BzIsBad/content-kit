@@ -18,7 +18,9 @@ A recipe is one kind of video. v1 has one, `reel`: a long talking or demo record
 
 ## How it runs
 
-Every step goes through one program, `scripts/kit.mjs`, run with the kit's own Node: `doctor`, `install`, `scaffold`, `add-brand`, `validate`, `new-job`, `ingest`, `transcribe`, `frames`, `render`, `review-frames` and `smoke-test`. Each prints exactly one JSON object, with a plain-language `message` and `fix` when something goes wrong. `install` copies a small launcher to `~/.content-kit/kit.mjs`; skills and the workspace permission list call that launcher, so they keep working after the plugin updates.
+Every step goes through one program, `scripts/kit.mjs`, run with the kit's own Node: `doctor`, `install`, `scaffold`, `add-brand`, `validate`, `new-job`, `ingest`, `transcribe`, `frames`, `render`, `review-frames`, `smoke-test`, `install-skill` and `update`. Each prints exactly one JSON object, with a plain-language `message` and `fix` when something goes wrong. `install` copies a small launcher to `~/.content-kit/kit.mjs`; skills and the workspace permission list call that launcher, so they keep working after the plugin updates.
+
+**Fixes arrive on their own.** The desktop app can't update a plugin from its plugin screen, so the kit keeps itself current. About once a week, at the start of a new video, it looks up the latest published release of this repo (only tags named like `v1.2.3`, over https), checks it, and installs its working parts (`scripts/`, `render/`, `recipes/`, `templates/`) into `~/.content-kit/kit/<version>/`. The launcher runs the newest copy that passes a quick check, so the previous version is still there to fall back to. Saying "check my video setup" looks right away. Set `CONTENT_KIT_NO_UPDATE=1` to turn the automatic check off. The skills themselves still come from the plugin.
 
 | Job | Tool | Where it lives |
 | --- | --- | --- |
@@ -36,6 +38,7 @@ Before each render the kit copies the chosen moments out of the raw footage into
 | registry.npmjs.org | Remotion and its parts; sherpa-onnx | 335 MB download, 780 MB on disk |
 | Remotion's download host | Remotion's headless Chrome | 100 MB |
 | github.com | the speech model (a sherpa-onnx release file) | 108 MB |
+| github.com | later fixes to the kit itself: this repo's tagged releases, about once a week at most | under 1 MB each |
 
 Nothing is compiled on the computer. On a Mac the kit needs macOS 15 (Sequoia) or newer, because Remotion's bundled ffmpeg is built for it; `doctor` checks and says so in plain words.
 

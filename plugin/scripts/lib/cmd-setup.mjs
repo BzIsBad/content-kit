@@ -5,6 +5,7 @@ import path from 'node:path';
 import { KitError, PLUGIN_DIR, SLUG_RE, ensureLauncher, recordKit, exists, isDir, kitPaths, localDateStamp, readJsonFile, readState, toPosix, writeFileAtomic, writeJson } from './common.mjs';
 import { cloudSyncCheck } from './system.mjs';
 import { detectKind, validateBrand, validateEdit } from './validate.mjs';
+import { autoUpdate } from './update.mjs';
 
 function requireFlag(flags, name, example) {
   const v = flags[name];
@@ -189,7 +190,11 @@ export async function newJob(flags) {
   const jobDir = path.join(brandDir, 'jobs', job);
   const existed = isDir(jobDir);
   for (const d of ['work', 'review']) fs.mkdirSync(path.join(jobDir, d), { recursive: true });
-  return { job, jobDir, existed, brief: path.join(jobDir, 'brief.md'), editJson: path.join(jobDir, 'edit.json') };
+  // A clean moment to pick up the kit's latest fixes, before anything is rendered: at most once a
+  // week, with short timeouts. It never fails the job; offline simply means no update this time.
+  // The commands after this one run the new copy through the launcher.
+  const updated = await autoUpdate();
+  return { job, jobDir, existed, brief: path.join(jobDir, 'brief.md'), editJson: path.join(jobDir, 'edit.json'), ...(updated ? { updated } : {}) };
 }
 
 // ---- validate ------------------------------------------------------------------------------

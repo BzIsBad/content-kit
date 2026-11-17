@@ -23,7 +23,16 @@ export const PINS = Object.freeze({
   minMacOS: 15,
 });
 
-export const SCRIPTS_DIR = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+// Where published releases of the kit come from (contracts §1, "Self-update"). Every published
+// version is a git tag vX.Y.Z with a GitHub release; `kit.mjs update` installs only those.
+export const RELEASES = Object.freeze({
+  repo: 'https://github.com/BzIsBad/content-kit',
+  checkEveryDays: 7,
+  // After a check that didn't get an answer (offline, GitHub unreachable, cut off), try again sooner.
+  retryAfterDays: 1,
+});
+
+export const SCRIPTS_DIR =path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const PLUGIN_DIR = path.dirname(SCRIPTS_DIR);
 
 // ---- Errors -------------------------------------------------------------------------------
@@ -61,7 +70,21 @@ export function kitPaths(home = kitHome()) {
     state: path.join(home, 'state.json'),
     // The stable launcher (a copy of scripts/launcher.mjs). Skills and the permission list use it.
     launcher: path.join(home, 'kit.mjs'),
+    // Self-updated copies of the kit, one folder per version (see update.mjs).
+    kits: path.join(home, 'kit'),
   };
+}
+
+/** 'self-update' when this kit runs from <kit home>/kit/<version>/, otherwise 'plugin'. */
+export function kitSource(home = kitHome()) {
+  const kits = path.resolve(kitPaths(home).kits);
+  return path.resolve(PLUGIN_DIR).startsWith(kits + path.sep) ? 'self-update' : 'plugin';
+}
+
+/** The launcher generation written in a launcher file's first lines ("launcher-generation: N"). */
+export function launcherGeneration(text) {
+  const m = /launcher-generation:\s*(\d+)/.exec(String(text).slice(0, 600));
+  return m ? Number(m[1]) : 1;
 }
 
 /** The plugin's version, from .claude-plugin/plugin.json. */
@@ -83,16 +106,26 @@ export function recordKit(home = kitHome()) {
   const kitFile = path.join(SCRIPTS_DIR, 'kit.mjs');
   const st = readState(home);
   const version = pluginVersion();
-  if (st.kit && st.kit.path === kitFile && st.kit.version === version && exists(p.launcher)) return;
+  const source = kitSource(home);
+  let launcherOk = false;
+  try {
+    const have = fs.readFileSync(p.launcher);
+    const want = fs.readFileSync(path.join(SCRIPTS_DIR, 'launcher.mjs'));
+    launcherOk = have.equals(want) || launcherGeneration(have.toString('utf8')) > launcherGeneration(want.toString('utf8'));
+  } catch {}
+  if (st.kit && st.kit.path === kitFile && st.kit.version === version && st.kit.source === source && launcherOk) return;
   try {
     ensureLauncher(home);
-    updateState({ kit: { path: kitFile, pluginDir: PLUGIN_DIR, version, launcher: p.launcher } }, home);
+    updateState({ kit: { path: kitFile, pluginDir: PLUGIN_DIR, version, source, launcher: p.launcher } }, home);
   } catch {
     // A read-only kit home is reported by doctor; never fail a command over this note.
   }
 }
 
-/** Copy scripts/launcher.mjs to <kit home>/kit.mjs if it is missing or different. */
+/**
+ * Copy scripts/launcher.mjs to <kit home>/kit.mjs if it is missing or different, but never
+ * replace a launcher of a later generation with an earlier one (an older kit copy can still run).
+ */
 export function ensureLauncher(home = kitHome()) {
   const src = path.join(SCRIPTS_DIR, 'launcher.mjs');
   const dest = kitPaths(home).launcher;
@@ -101,6 +134,7 @@ export function ensureLauncher(home = kitHome()) {
   try {
     have = fs.readFileSync(dest);
   } catch {}
+  if (have && launcherGeneration(have.toString('utf8')) > launcherGeneration(want.toString('utf8'))) return dest;
   if (!have || !have.equals(want)) writeFileAtomic(dest, want);
   return dest;
 }

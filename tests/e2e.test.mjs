@@ -17,6 +17,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { kit, tmpDir, sampleBrand, download, SPEECH_SAMPLE_WAV } from './helpers.mjs';
+import { makeRelease, releaseServer } from './releases.mjs';
+import { hashDir } from '../plugin/scripts/lib/common.mjs';
+import { RENDER_SKIP } from '../plugin/scripts/lib/cmd-install.mjs';
 import { Canvas } from '../plugin/scripts/lib/png.mjs';
 import { findBinaries } from '../plugin/scripts/lib/ffmpeg.mjs';
 
@@ -194,6 +197,40 @@ test('end to end on Linux', { skip, timeout: 60 * 60 * 1000 }, async (t) => {
     assert.equal(r.json.ok, true, JSON.stringify(r.json));
     assert.ok(fs.statSync(r.json.out).size > 10000);
     assert.equal(path.basename(r.json.out), 'test-clip.mp4');
+  });
+
+  await t.test('a self-update at new-job is picked up by the next render', async () => {
+    // A release one patch newer whose renderer files differ (a changed README), served locally.
+    const server = await releaseServer();
+    const manifest = JSON.parse(fs.readFileSync(new URL('../plugin/.claude-plugin/plugin.json', import.meta.url), 'utf8'));
+    const [a, b, c] = manifest.version.split('.').map(Number);
+    const next = `${a}.${b}.${c + 1}`;
+    const readme = fs.readFileSync(new URL('../plugin/render/README.md', import.meta.url), 'utf8');
+    server.archives[`v${next}`] = makeRelease(next, { change: { 'render/README.md': `${readme}\nChanged in the test release.\n` } });
+    server.latest = `v${next}`;
+    const launcher = path.join(home, 'kit.mjs');
+    const env = { ...bareEnv, CONTENT_KIT_RELEASE_URL: server.url, CONTENT_KIT_NO_UPDATE: '', CONTENT_KIT_HOME: '' };
+    try {
+      const st = JSON.parse(fs.readFileSync(path.join(home, 'state.json'), 'utf8'));
+      delete st.update;
+      fs.writeFileSync(path.join(home, 'state.json'), JSON.stringify(st, null, 2));
+      const job = await kit(['new-job', '--brand-dir', brandDir, '--slug', 'after-update'], { home, env, script: launcher });
+      assert.equal(job.json.ok, true, JSON.stringify(job.json));
+      assert.deepEqual(job.json.updated, { from: manifest.version, to: next, recipesChanged: [] });
+      const r = await kit(['smoke-test', '--brand-dir', brandDir], { home, env, script: launcher });
+      assert.equal(r.json.ok, true, JSON.stringify(r.json));
+      assert.match(r.stderr, /renderer needs a quick refresh/);
+      const after = JSON.parse(fs.readFileSync(path.join(home, 'state.json'), 'utf8'));
+      assert.equal(after.kit.source, 'self-update');
+      assert.equal(after.kit.version, next);
+      assert.equal(after.render.sourceHash, hashDir(path.join(home, 'kit', next, 'render'), RENDER_SKIP));
+      assert.ok(fs.readFileSync(path.join(home, 'render', 'README.md'), 'utf8').includes('Changed in the test release.'));
+      const d = await kit(['doctor', '--workspace', ws], { home, env: { ...env, CONTENT_KIT_NO_UPDATE: '1' }, script: launcher });
+      assert.equal(d.json.ready, true, d.json.summary);
+      assert.deepEqual([d.json.kit.version, d.json.kit.source], [next, 'self-update']);
+    } finally {
+      await server.close();
+    }
   });
 
   await t.test('raw footage was never touched', () => {

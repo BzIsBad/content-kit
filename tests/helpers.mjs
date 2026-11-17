@@ -13,12 +13,16 @@ export function tmpDir(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), `ck-${prefix}-`));
 }
 
-/** Run kit.mjs. Asserts the stdout contract (exactly one JSON object) and returns it. */
-export function kit(args, { home, env = {}, cwd } = {}) {
+/**
+ * Run kit.mjs (or `script`, such as the launcher in a kit home). Asserts the stdout contract
+ * (exactly one JSON object) and returns it.
+ */
+export function kit(args, { home, env = {}, cwd, script = KIT } = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [KIT, ...args], {
+    const child = spawn(process.execPath, [script, ...args], {
       cwd: cwd || ROOT,
-      env: { ...process.env, ...(home ? { CONTENT_KIT_HOME: home } : {}), ...env },
+      // The automatic update check is off in tests unless a test turns it on (it would reach GitHub).
+      env: { ...process.env, CONTENT_KIT_NO_UPDATE: '1', ...(home ? { CONTENT_KIT_HOME: home } : {}), ...env },
       windowsHide: true,
     });
     let out = '';

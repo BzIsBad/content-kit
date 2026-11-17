@@ -39,7 +39,8 @@ When it's done, you'll have a brand guide, a test clip, and a skill named after 
 - **Claude never posts anything for you.** You post when you're happy.
 - **Nothing is locked in.** The folder, the brand guide and the skills are plain files on your computer. Copy them, back them up, take them anywhere.
 - **The video tool is free for small teams.** If three or more people work in your business (and it isn't a non-profit), you may need your own licence for it later, depending on how you use it. Setup mentions it if it applies; it never holds anything up.
-- **If something stops working**, say *"check my video setup"*. Claude finds the problem and fixes what it can.
+- **Fixes arrive on their own.** About once a week, when you start a new video, the kit picks up its latest fixes and Claude tells you in one sentence. You don't need to update anything yourself.
+- **If something stops working**, say *"check my video setup"*. Claude fetches the kit's latest fixes, finds the problem and fixes what it can.
 - **More than one business?** Say *"add another brand"*.
 - **Something's changed about your brand?** Say *"update the brand guide for <brand>"*, then *"update the <brand> video skill"*.
 

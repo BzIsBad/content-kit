@@ -23,7 +23,9 @@ In the Claude Code terminal, the same thing is two commands:
 /plugin install content-kit@content-kit
 ```
 
-Then say "set me up". To try a local copy instead, use `claude --plugin-dir ./plugin` from this folder, or add the folder as a marketplace with `/plugin marketplace add <path to this folder>`.
+Then say "set me up".
+
+**Fixes arrive on their own.** Once it's set up, the kit picks up its own fixes: about once a week, at the start of a new video, it fetches the latest published release of this repo and tells the owner in one sentence. Saying "check my video setup" fetches the latest straight away. Nobody needs to open the plugin screen or a terminal for that. (The plugin's skills themselves change only when the plugin is added again.) How releases are published: [docs/spec/contracts.md](docs/spec/contracts.md), "Self-update". To try a local copy instead, use `claude --plugin-dir ./plugin` from this folder, or add the folder as a marketplace with `/plugin marketplace add <path to this folder>`.
 
 ## What it needs on the computer
 

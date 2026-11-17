@@ -16,7 +16,8 @@ const home = tmpDir('home');
 test('help and unknown commands follow the JSON contract', async () => {
   const h = await kit(['help'], { home });
   assert.equal(h.json.ok, true);
-  assert.equal(h.json.commands.length, 13);
+  assert.equal(h.json.commands.length, 14);
+  assert.ok(h.json.commands.includes('update'));
   const u = await kit(['make-coffee'], { home });
   assert.equal(u.json.code, 'UNKNOWN_COMMAND');
   const b = await kit(['scaffold', '--nope', 'x'], { home });

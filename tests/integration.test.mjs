@@ -17,7 +17,7 @@ const PLUGIN = path.join(ROOT, 'plugin');
 function runLauncher(home, args, env = {}) {
   const r = spawnSync(process.execPath, [path.join(home, 'kit.mjs'), ...args], {
     encoding: 'utf8',
-    env: { ...process.env, CONTENT_KIT_HOME: '', CLAUDE_CODE_PLUGIN_CACHE_DIR: path.join(home, 'no-cache'), ...env },
+    env: { ...process.env, CONTENT_KIT_NO_UPDATE: '1', CONTENT_KIT_HOME: '', CLAUDE_CODE_PLUGIN_CACHE_DIR: path.join(home, 'no-cache'), ...env },
   });
   const lines = r.stdout.split('\n').filter((l) => l.trim());
   assert.equal(lines.length, 1, `one JSON line expected, got: ${r.stdout}\n${r.stderr}`);
