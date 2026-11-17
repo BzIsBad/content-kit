@@ -20,6 +20,7 @@ Everything it makes stays on your computer, in a folder you own.
    - Type `/plugin` and press Enter. The plugin screen opens.
    - Choose **Add marketplace** and enter `bzisbad/content-kit`. If it asks for a full address, use `https://github.com/BzIsBad/content-kit`.
    - Open the marketplace you just added, pick **content-kit**, and choose **Install**.
+   - **No "Add marketplace" on your screen?** Some copies of the app (seen on a Mac) show **Upload plugin** there. Download [content-kit.zip](https://github.com/BzIsBad/content-kit/releases/latest/download/content-kit.zip) and leave it as a zip. Choose **Upload plugin** and pick that file.
    - Type `/` and check that **setup** is in the list. If it isn't, start a new session in the same folder.
 4. **Say "set me up".** Claude checks your computer, installs what it needs (no passwords, nothing outside one folder), and then asks you about your brand, one question at a time. Answer in your own words. "I don't know yet" is fine.
 5. **Watch the test clip.** Claude makes a five-second clip in your colours. Tell it if anything looks off.

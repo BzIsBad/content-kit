@@ -16,6 +16,8 @@ In the Code tab of the Claude desktop app (Pro plan or higher), with the folder 
 2. Choose **Add marketplace** and enter `bzisbad/content-kit`.
 3. Open that marketplace, pick **content-kit**, and choose **Install**.
 
+Some copies of the app show **Upload plugin** on that screen and no **Add marketplace** (seen on a Mac). There, download [content-kit.zip](https://github.com/BzIsBad/content-kit/releases/latest/download/content-kit.zip), choose **Upload plugin**, and pick the zip.
+
 In the Claude Code terminal, the same thing is two commands:
 
 ```
