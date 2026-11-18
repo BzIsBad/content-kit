@@ -42,7 +42,7 @@ Then say "set me up".
 | --- | --- |
 | `.claude-plugin/marketplace.json` | This repo as a one-plugin marketplace |
 | `plugin/` | The plugin: skills, the `kit.mjs` pipeline, the render project, templates and recipes |
-| `tests/` | Tests that run on Linux: `node --test tests/unit.test.mjs tests/integration.test.mjs` (fast), `tests/e2e.test.mjs` (real install, a few minutes) |
+| `tests/` | Tests that run on Linux: `node --test tests/unit.test.mjs tests/integration.test.mjs tests/update.test.mjs` (fast), `tests/e2e.test.mjs` (real install, a few minutes) |
 | `docs/client/` | The page for the person using it |
 | `docs/spec/` | The contracts between the parts |
 
